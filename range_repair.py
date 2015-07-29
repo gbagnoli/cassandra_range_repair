@@ -218,7 +218,7 @@ def repair_range(options, start, end, step, nodeposition):
     if options.keyspace: cmd.append(options.keyspace)
     cmd.extend(options.columnfamily)
     cmd.extend([options.local, options.par, options.inc, options.snapshot,
-                "-pr", "-st", start, "-et", end])
+                options.pr, "-st", start, "-et", end])
 
     if not options.dry_run:
         success, cmd, _, stderr = run_command(*cmd)
@@ -354,6 +354,9 @@ def main():
                       action="store_const", const="-snapshot",
                       metavar="LOCAL", help="Use snapshots (pre-2.x only)")
 
+    parser.add_option('-R', '--no-pr', dest='pr', default=True,
+                      action='store_false', help='Disable --partitioner-range')
+
     parser.add_option("-v", "--verbose", dest="verbose", action='store_true',
                       default=False, help="Verbose output")
 
@@ -385,6 +388,11 @@ def main():
         parser.print_help()
         logging.debug('Extra parameters')
         sys.exit(1)
+
+    if options.pr:
+        options.pr = '-pr'
+    else:
+        options.pr = ''
 
     if options.inc and not options.par:
         logging.info('Incremental repairs needs --par: enabling')
